@@ -9,8 +9,8 @@ apps = [r"/Applications/Microsoft\ Teams\ \(work\ or\ school\).app", "/Applicati
 # TODO: Create saving to file
 # TODO: Create menu
 #           - Create session command or Update session (load from file)
-#           - Load apps from /Applications/ (not sure if brew add there as well -> check)
-#           - Display apps -> How can I do navigation like in fish? or htop
+#           - Load apps from /Applications/ (not sure if brew add there as well -> check) (D) -> Didn't check the brew
+#           - Display apps -> How can I do navigation like in fish? or htop -> Probably event = keyboard.read_event() and rerender the menu every time. Also listen to 'q' to exit
 #           - With 'x' the app will be appended to file -> Probably load 
 def open(applications: list[str]):
     OPEN_COMMAND = "open"
@@ -19,7 +19,7 @@ def open(applications: list[str]):
         command = f"{OPEN_COMMAND} {app}"
         os.system(command)
 
-def render_menu():
+def available_applications():
     APPLICATIONS_BASE = "/Applications/"
     folder = Path(APPLICATIONS_BASE)
     if folder.is_dir():
@@ -29,5 +29,7 @@ def render_menu():
         print(f"Folder {APPLICATIONS_BASE} not existing or not a folder")
         sys.exit(1)
             
+available_applications = available_applications()
+
 #open(apps)
-print(render_menu())
+
