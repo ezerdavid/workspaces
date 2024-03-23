@@ -8,16 +8,15 @@ from pathlib import Path
 APPLICATIONS_BASE = "/Applications/"
 SAVED_BASE = "./saved"
 
-# TODO: Create menu
-#           - Delete apps
-#           - Load apps from /Applications/ (not sure if brew add there as well -> check) (D) -> Didn't check the brew
-# open workspace from command line on arg[0] available
-def open_applications(name: str, applications: list[str]):
+def open_workspace(name: str, applications: list[str]):
     OPEN_COMMAND = "open"
 
     print(f"Opening workspace {name}")
     for app in applications:
-        # TODO handle if application not present -> For example uninstalled
+        app_path = Path(f"{APPLICATIONS_BASE}/{app}")
+        if not app_path.exists():
+            print(f"Application {app} do not exists. Skipping") 
+            continue
         command = f"{OPEN_COMMAND} {APPLICATIONS_BASE}/{app}"
         os.system(command)
 
@@ -55,7 +54,7 @@ def render_main_menu():
     elif selected_option == "[c] Change workspace":
         handle_workspace(add_workspace)
     elif selected_option == "[o] Open workspace":
-        handle_workspace(open_applications)
+        handle_workspace(open_workspace)
     elif selected_option == "[d] Delete workspace":
         handle_workspace(delete_workspace)
 
@@ -85,7 +84,8 @@ def load_workspace(workspace_name: str):
     entries = []
     with open(file_path, 'r') as file:
         for line in file:
-            entries.append(line.strip())  # Remove leading/trailing whitespace and newline characters
+            # Remove leading/trailing whitespace and newline characters
+            entries.append(line.strip())  
     return entries
 
 def add_workspace(name: str | None, workspace_apps: list[str]):
@@ -94,8 +94,11 @@ def add_workspace(name: str | None, workspace_apps: list[str]):
     applications = available_applications()
     names = application_names(applications)
     workspace_apps_names = application_names(workspace_apps)
+    # In case we have invalid apps (can be deleted or whatever reason) remove it from the preselection
+    # If the workspace is saved the invalid app will be removed
+    valid_names = list(set(names) & set(workspace_apps_names))
 
-    application_list_terminal = TerminalMenu(names, multi_select=True, show_multi_select_hint=True, preselected_entries=workspace_apps_names, multi_select_select_on_accept=False)
+    application_list_terminal = TerminalMenu(names, multi_select=True, show_multi_select_hint=True, preselected_entries=valid_names, multi_select_select_on_accept=False)
     applications_indicies = application_list_terminal.show()
     selected_apps = [applications[index] for index in applications_indicies]
     confirmation = confirm_workspace_creation(selected_apps)
@@ -142,9 +145,24 @@ def save_workspace(name: str, selected_apps: list[str]):
     workspace_to_save.write_text(formated_save)
     print(f"Workspace {name} sucessfully saved")
 
+def command_line_runner(workspace: str):
+    workspaces = list_workspaces()
+    if not workspace in workspaces:
+        print(f"Workspace {workspace} do not exist")
+        sys.exit(0)
+
+    workspace_apps = load_workspace(workspace)
+    open_workspace(workspace, workspace_apps)
+
+
+
 
 def main():
-    render_main_menu()
+    if len(sys.argv) > 1:
+        workspace = sys.argv[1]
+        command_line_runner(workspace)
+    else:
+        render_main_menu()
 
 
 if __name__ == "__main__":
