@@ -2,7 +2,7 @@ import sys
 import os
 from pathlib import Path
 
-APPLICATIONS_BASE = "/Applications/"
+APPLICATIONS_BASE = "/Applications"
 SAVED_BASE = "./saved"
 
 def command_line_runner(workspace: str):
@@ -27,7 +27,7 @@ def open_workspace(name: str, applications: list[str]):
         if not app_path.exists():
             print(f"Application {app} do not exists. Skipping") 
             continue
-        command = f"{OPEN_COMMAND} {APPLICATIONS_BASE}/{app}"
+        command = f"{OPEN_COMMAND} {APPLICATIONS_BASE}/{app!r}"
         os.system(command)
 
 def save_workspace(name: str, selected_apps: list[str]):
